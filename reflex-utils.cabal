@@ -1,0 +1,32 @@
+Name: reflex-utils
+Version: 0.0
+Synopsis: Utilities for Reflex FRP
+Description: Utilities for Reflex FRP
+License: BSD3
+License-file: LICENSE
+Author: Ben Moseley
+Maintainer: ben@benmoseley.net
+Stability: Experimental
+Category: FRP
+Build-type: Simple
+Cabal-version: >=1.9.2
+homepage:    https://github.com/benmos/reflex-utils
+bug-reports: https://github.com/benmos/reflex-utils/issues
+
+library
+  hs-source-dirs: src
+  build-depends:
+    base >= 4.7 && < 4.9,
+    mtl >= 2.1 && < 2.3,
+    containers == 0.5.*,
+    these >= 0.4 && < 0.7,
+    transformers >= 0.2
+
+  exposed-modules:
+    Reflex.Utils.Core
+
+  ghc-options: -Wall -fwarn-tabs
+
+source-repository head
+  type: git
+  location: https://github.com/benmos/reflex-utils
