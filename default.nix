@@ -1,5 +1,5 @@
 { mkDerivation, stdenv
-, these
+, reflex, reflex-dom, these
 }:
 mkDerivation {
   pname        = "reflex-utils";
@@ -14,7 +14,7 @@ mkDerivation {
                                          builtins.elem base ["reflex-utils.cabal" "Setup.hs" "LICENSE"]))
                                   ./.;
   buildDepends = [
-    these
+    reflex reflex-dom these
   ];
   testDepends = [
   ];
