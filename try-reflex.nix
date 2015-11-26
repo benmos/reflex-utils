@@ -1,5 +1,5 @@
 sysPkgs: import (sysPkgs.fetchgit {
     url    = git://github.com/ryantrinkle/try-reflex;
-    rev    = "490e2ac4df8fbee5c19a1a5480f1d27fae201df0";
-    sha256 = "ac028208dbc53acb39fc1228b3238b1e87ef1def2e322d652cb7a82bb1c8cdd4";
+    rev    = "70a7230df219d604e25caf22c22c7a5553c30af4";
+    sha256 = "b0b95ff5d578230578d2a42163c8577a1aaac71528da30bea075ade4fce548fb";
   }) {}
