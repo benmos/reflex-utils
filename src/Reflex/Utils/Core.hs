@@ -6,15 +6,14 @@ module Reflex.Utils.Core (
   accumReset,
   traceEventShow,
   rbutton,
-#ifdef ghcjs_HOST_OS
   windowOpen
-#endif
 )
 
 where
 
 import Control.Monad.Fix
 import Data.Monoid
+import Network.URI
 import Reflex
 import Reflex.Dom
 
@@ -24,7 +23,6 @@ import qualified Data.Map as M
 import Control.Monad.IO.Class
 import GHCJS.Marshal
 import GHCJS.Types
-import Network.URI
 import qualified Data.Text as T
 #endif
 
@@ -85,5 +83,8 @@ windowOpen ev = performEventAsync (go <$> ev)
       go uri cb = do
               liftIO $ js_windowOpen =<< toJSRef (T.pack (show uri))
               liftIO $ cb ()
+#else
+windowOpen :: forall t m . MonadWidget t m => Event t URI -> m (Event t ())
+windowOpen = error "Reflex.Utils.Core:windowOpen - only implemented for JS"
 #endif
 
