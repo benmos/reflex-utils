@@ -16,13 +16,18 @@ bug-reports: https://github.com/benmos/reflex-utils/issues
 library
   hs-source-dirs: src
   build-depends:
-    base >= 4.7 && < 4.9,
-    mtl >= 2.1 && < 2.3,
-    containers == 0.5.*,
+    base         >= 4.7 && < 4.9,
+    mtl          >= 2.1 && < 2.3,
+    containers   == 0.5.*,
+    network-uri  >= 2.6,
     reflex,
     reflex-dom,
-    these >= 0.4 && < 0.7,
+    text         >= 0.11,
+    these        >= 0.4 && < 0.7,
     transformers >= 0.2
+
+  if impl(ghcjs)
+    build-depends:     ghcjs-base        >= 0.1
 
   exposed-modules:
     Reflex.Utils.Core

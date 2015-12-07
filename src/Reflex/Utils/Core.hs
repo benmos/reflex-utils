@@ -1,8 +1,14 @@
-{-# LANGUAGE RecursiveDo #-}
+{-# LANGUAGE CPP, OverloadedStrings, ScopedTypeVariables, RecursiveDo #-}
+#ifdef ghcjs_HOST_OS
+{-# LANGUAGE ForeignFunctionInterface, JavaScriptFFI #-}
+#endif
 module Reflex.Utils.Core (
   accumReset,
   traceEventShow,
-  rbutton
+  rbutton,
+#ifdef ghcjs_HOST_OS
+  windowOpen
+#endif
 )
 
 where
@@ -13,6 +19,14 @@ import Reflex
 import Reflex.Dom
 
 import qualified Data.Map as M
+
+#ifdef ghcjs_HOST_OS
+import Control.Monad.IO.Class
+import GHCJS.Marshal
+import GHCJS.Types
+import Network.URI
+import qualified Data.Text as T
+#endif
 
 -- | Accumulate monoidal Events whilst allowing them to be reset by a separate Event
 accumReset :: (Reflex t, MonadFix m, MonadHold t m, Monoid a) => Event t a -> Event t () -> m (Dynamic t a)
@@ -60,4 +74,16 @@ rbutton lbl attrs = mdo
 --              liftIO $ cb (a, parseResponse response)
 --       return ()
 
+
+#ifdef ghcjs_HOST_OS
+foreign import javascript unsafe "window['open']($1)" js_windowOpen :: JSRef a -> IO ()
+
+windowOpen :: forall t m . MonadWidget t m => Event t URI -> m (Event t ())
+windowOpen ev = performEventAsync (go <$> ev)
+    where
+      go :: URI -> (() -> IO ()) -> WidgetHost m ()
+      go uri cb = do
+              liftIO $ js_windowOpen =<< toJSRef (T.pack (show uri))
+              liftIO $ cb ()
+#endif
 
