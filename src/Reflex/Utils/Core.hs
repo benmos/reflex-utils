@@ -6,24 +6,27 @@ module Reflex.Utils.Core (
   accumReset,
   traceEventShow,
   rbutton,
-  windowOpen
+  windowOpen,
+  windowLocationHref
 )
 
 where
 
 import Control.Monad.Fix
+import Data.Functor
 import Data.Monoid
-import Network.URI
+-- import Network.URI
 import Reflex
 import Reflex.Dom
 
 import qualified Data.Map as M
+import qualified Data.Text as T
 
 #ifdef ghcjs_HOST_OS
 import Control.Monad.IO.Class
-import GHCJS.Marshal
+import GHCJS.Foreign
+-- import GHCJS.Marshal
 import GHCJS.Types
-import qualified Data.Text as T
 #endif
 
 -- | Accumulate monoidal Events whilst allowing them to be reset by a separate Event
@@ -74,17 +77,22 @@ rbutton lbl attrs = mdo
 
 
 #ifdef ghcjs_HOST_OS
-foreign import javascript unsafe "window['open']($1)" js_windowOpen :: JSRef a -> IO ()
-
-windowOpen :: forall t m . MonadWidget t m => Event t URI -> m (Event t ())
-windowOpen ev = performEventAsync (go <$> ev)
-    where
-      go :: URI -> (() -> IO ()) -> WidgetHost m ()
-      go uri cb = do
-              liftIO $ js_windowOpen =<< toJSRef (T.pack (show uri))
-              liftIO $ cb ()
+foreign import javascript unsafe "window['open']($1)" js_windowOpen :: JSString -> IO (JSRef a)
+-- | Accept 'T.Text' rather than URI because we want to be able to handle relative URLs
+windowOpen :: forall t m a . MonadWidget t m => Event t T.Text -> m (Event t (JSRef a))
+windowOpen ev = performEventAsync (ffor ev $ \uri cb -> liftIO $ cb =<< (js_windowOpen $ toJSString uri))
 #else
-windowOpen :: forall t m . MonadWidget t m => Event t URI -> m (Event t ())
+windowOpen :: forall t m a. MonadWidget t m => Event t T.Text -> m (Event t a)
 windowOpen = error "Reflex.Utils.Core:windowOpen - only implemented for JS"
+#endif
+
+
+#ifdef ghcjs_HOST_OS
+foreign import javascript unsafe "window['location']['href']" js_windowLocationHref :: IO JSString
+windowLocationHref :: forall t m . MonadWidget t m => Event t () -> m (Event t T.Text)
+windowLocationHref ev = performEventAsync (ev $> (\cb -> liftIO $ cb . fromJSString =<< js_windowLocationHref))
+#else
+windowLocationHref :: forall t m . MonadWidget t m => Event t () -> m (Event t T.Text)
+windowLocationHref = error "Reflex.Utils.Core:windowLocationHref - only implemented for JS"
 #endif
 
