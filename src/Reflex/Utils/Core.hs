@@ -13,7 +13,6 @@ module Reflex.Utils.Core (
 where
 
 import Control.Monad.Fix
-import Data.Functor
 import Data.Monoid
 -- import Network.URI
 import Reflex
@@ -24,6 +23,7 @@ import qualified Data.Text as T
 
 #ifdef ghcjs_HOST_OS
 import Control.Monad.IO.Class
+import Data.Functor (($>))
 import GHCJS.Foreign
 -- import GHCJS.Marshal
 import GHCJS.Types
