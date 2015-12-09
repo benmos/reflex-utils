@@ -4,6 +4,7 @@
 #endif
 module Reflex.Utils.Core (
   accumReset,
+  holdReset,
   traceEventShow,
   rbutton,
   windowOpen,
@@ -14,7 +15,6 @@ where
 
 import Control.Monad.Fix
 import Data.Monoid
--- import Network.URI
 import Reflex
 import Reflex.Dom
 
@@ -25,19 +25,21 @@ import qualified Data.Text as T
 import Control.Monad.IO.Class
 import Data.Functor (($>))
 import GHCJS.Foreign
--- import GHCJS.Marshal
 import GHCJS.Types
 #endif
 
 -- | Accumulate monoidal Events whilst allowing them to be reset by a separate Event
-accumReset :: (Reflex t, MonadFix m, MonadHold t m, Monoid a) => Event t a -> Event t () -> m (Dynamic t a)
-accumReset ea ereset = foldDyn ($) mempty $ leftmost [fmap (<>) ea, const mempty <$ ereset]
+accumReset :: forall a t m . (Reflex t, MonadFix m, MonadHold t m, Monoid a) => Event t a -> Event t () -> m (Dynamic t a)
+accumReset ea ereset = foldDyn ($) mempty
+                         (leftmost [fmap (<>) ea, const mempty <$ ereset] :: Event t (a -> a))
+
+-- | Hold the most recent occurrence (if any) and allow for reset
+holdReset :: forall a t m . (Reflex t, MonadFix m, MonadHold t m) => Event t a -> Event t () -> m (Dynamic t (Maybe a))
+holdReset ea ereset = foldDyn ($) Nothing
+                        (leftmost [const . Just <$> ea, const Nothing <$ ereset] :: Event t (Maybe a -> Maybe a))
 
 traceEventShow :: (Reflex t, Show a) => Event t a -> Event t a
 traceEventShow = traceEvent "[EVENT_OCCURRED] "
-
--- rbuttonsel :: MonadWidget t m => String -> M.Map String String -> m (Event t ())
--- rbuttonsel = rbutton "sel" "nosel"
 
 rbutton :: MonadWidget t m => String -> M.Map String String -> m (Event t ())
 rbutton lbl attrs = mdo
