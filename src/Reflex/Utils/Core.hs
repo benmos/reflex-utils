@@ -24,7 +24,7 @@ import qualified Data.Text as T
 #ifdef ghcjs_HOST_OS
 import Control.Monad.IO.Class
 import Data.Functor (($>))
-import GHCJS.Foreign
+import qualified Data.JSString.Text as JSS
 import GHCJS.Types
 #endif
 
@@ -79,10 +79,11 @@ rbutton lbl attrs = mdo
 
 
 #ifdef ghcjs_HOST_OS
-foreign import javascript unsafe "window['open']($1)" js_windowOpen :: JSString -> IO (JSRef a)
+foreign import javascript unsafe "window['open']($1)" js_windowOpen :: JSString -> IO JSVal
 -- | Accept 'T.Text' rather than URI because we want to be able to handle relative URLs
-windowOpen :: forall t m a . MonadWidget t m => Event t T.Text -> m (Event t (JSRef a))
-windowOpen ev = performEventAsync (ffor ev $ \uri cb -> liftIO $ cb =<< (js_windowOpen $ toJSString uri))
+windowOpen :: forall t m . MonadWidget t m => Event t T.Text -> m (Event t JSVal)
+windowOpen ev = performEventAsync (ffor ev $ \uri cb -> liftIO $ cb =<< (js_windowOpen $ JSS.textToJSString uri))
+
 #else
 windowOpen :: forall t m a. MonadWidget t m => Event t T.Text -> m (Event t a)
 windowOpen = error "Reflex.Utils.Core:windowOpen - only implemented for JS"
@@ -92,7 +93,7 @@ windowOpen = error "Reflex.Utils.Core:windowOpen - only implemented for JS"
 #ifdef ghcjs_HOST_OS
 foreign import javascript unsafe "window['location']['href']" js_windowLocationHref :: IO JSString
 windowLocationHref :: forall t m . MonadWidget t m => Event t () -> m (Event t T.Text)
-windowLocationHref ev = performEventAsync (ev $> (\cb -> liftIO $ cb . fromJSString =<< js_windowLocationHref))
+windowLocationHref ev = performEventAsync (ev $> (\cb -> liftIO $ cb . JSS.textFromJSString =<< js_windowLocationHref))
 #else
 windowLocationHref :: forall t m . MonadWidget t m => Event t () -> m (Event t T.Text)
 windowLocationHref = error "Reflex.Utils.Core:windowLocationHref - only implemented for JS"
